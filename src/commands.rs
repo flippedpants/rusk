@@ -1,4 +1,7 @@
+use crate::task::{Task, Priority, Status};
+use uuid::Uuid;
 use clap::{Arg, ArgMatches, command, Command};
+use chrono::prelude::*;
 
 // pub enum Commands{
 //     Add,
@@ -28,16 +31,29 @@ pub fn getting_started(){
                 )
         ).get_matches();
 
+    let mut tasks: Vec<Task> = Vec::new();
+
     match cmds.subcommand(){
         Some(("add", sub_arg)) =>{
             let title = sub_arg.get_one::<String>("title").unwrap();
-            let priority = sub_arg.get_one::<String>("priority").unwrap();
+            let priority: Priority = sub_arg.get_one::<String>("priority").unwrap().parse().expect("Enter a valid priority");
+            let status: Status = String::from("Pending").parse().expect("Should a valid status");
+
+            let local: DateTime<Local> = Local::now();
+            let id = Uuid::new_v4();
+
+
+            let new_task: Task = Task::new(id,String::from(title),priority,status,local);
+            tasks.push(new_task);
+
+
             println!("Task added:");
-            println!("Task title- {}", title);
-            println!("Task priority - {}", priority);
+            println!("{:?}", tasks);
         }
         _ => {
             println!("No valid command was provided");
         }
     }
+
+
 }

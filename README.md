@@ -8,4 +8,5 @@
 
 # TODO - 
 - [x] find dependencies 
+- [ ] Save the data to json
 - [ ]  implement the basic 3 commands

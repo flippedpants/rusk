@@ -1,5 +1,5 @@
 use uuid::Uuid;
-// use chrono::{DateTime, Local};
+use chrono::{DateTime, Local};
 use serde::{Serialize, Deserialize};
 use strum::EnumString;
 
@@ -19,19 +19,20 @@ pub enum Priority{
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Task{
     id: Uuid,
-    name: String,
+    title: String,
     priority: Priority,
     status: Status,
-    // due_date: Option<DateTime<Local>>,
+    due_date: DateTime<Local>,
 }
 
 impl Task{
-    pub fn new(id: Uuid, name: String, priority: Priority, status: Status) -> Self{
+    pub fn new(id: Uuid, title: String, priority: Priority, status: Status, due_date:DateTime<Local> ) -> Self{
         Self{
             id,
-            name,
+            title,
             priority,
             status,
+            due_date,
         }
     }
 }
