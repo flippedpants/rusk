@@ -1,6 +1,8 @@
 use uuid::Uuid;
 
 mod task;
+mod commands;
+use commands::getting_started;
 use task::{Task,Priority,Status};
 
 fn main() {
@@ -11,4 +13,6 @@ fn main() {
     let new_task = Task::new(id, String::from("Submit DA"), priority, status);
 
     println!("{:?}", new_task);
+
+    getting_started();
 }
