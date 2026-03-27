@@ -4,12 +4,14 @@ use serde::{Serialize, Deserialize};
 use strum::EnumString;
 
 #[derive(Debug, Serialize, Deserialize, EnumString)]
+#[serde(rename_all="lowercase")]
 pub enum Status{
     Pending,
     Completed,
 }
 
 #[derive(Debug, Serialize, Deserialize, EnumString)]
+#[serde(rename_all="lowercase")]
 pub enum Priority{
     Low,
     Medium,

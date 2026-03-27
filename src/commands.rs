@@ -1,5 +1,5 @@
 use crate::task::{Task, Priority, Status};
-use crate::storage::save_to_json;
+use crate::storage::{save_to_json, load_json};
 use uuid::Uuid;
 use clap::{Arg, ArgMatches, command, Command};
 use chrono::prelude::*;
@@ -32,7 +32,7 @@ pub fn getting_started(){
                 )
         ).get_matches();
 
-    let mut tasks: Vec<Task> = Vec::new();
+    let mut tasks: Vec<Task> = load_json();
 
     match cmds.subcommand(){
         Some(("add", sub_arg)) =>{
@@ -46,10 +46,6 @@ pub fn getting_started(){
 
             let new_task: Task = Task::new(id,String::from(title),priority,status,local);
             tasks.push(new_task);
-
-
-            println!("Task added:");
-            println!("{:#?}", tasks);
 
             save_to_json(tasks);
         }
