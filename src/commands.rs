@@ -1,4 +1,5 @@
 use crate::task::{Task, Priority, Status};
+use crate::storage::save_to_json;
 use uuid::Uuid;
 use clap::{Arg, ArgMatches, command, Command};
 use chrono::prelude::*;
@@ -48,7 +49,9 @@ pub fn getting_started(){
 
 
             println!("Task added:");
-            println!("{:?}", tasks);
+            println!("{:#?}", tasks);
+
+            save_to_json(tasks);
         }
         _ => {
             println!("No valid command was provided");
