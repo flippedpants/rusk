@@ -3,14 +3,14 @@ use chrono::{DateTime, Local};
 use serde::{Serialize, Deserialize};
 use strum::EnumString;
 
-#[derive(Debug, Serialize, Deserialize, EnumString)]
+#[derive(Debug, Serialize, Deserialize, EnumString, PartialEq)]
 #[serde(rename_all="lowercase")]
 pub enum Status{
     Pending,
     Completed,
 }
 
-#[derive(Debug, Serialize, Deserialize, EnumString)]
+#[derive(Debug, Serialize, Deserialize, EnumString, PartialEq)]
 #[serde(rename_all="lowercase")]
 pub enum Priority{
     Low,
@@ -18,12 +18,12 @@ pub enum Priority{
     High,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Task{
     id: Uuid,
-    title: String,
-    priority: Priority,
-    status: Status,
+    pub title: String,
+    pub priority: Priority,
+    pub status: Status,
     due_date: DateTime<Local>,
 }
 
