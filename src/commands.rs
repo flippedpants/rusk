@@ -12,15 +12,11 @@ pub fn getting_started(){
             .about("Adds a new task")
                 .arg(
                     arg!(-t --title <"Title of the task">)
-                    // .short('t')
-                    // .long("title")
                     .help("Sets the title of the task")
                     .required(true)
                 )
                 .arg(
                     arg!(-p --priority <"Low,Medium,High">) 
-                    // .short('p')
-                    // .long("priority")
                     .help("Sets task priority")
                     .required(true)
                 )
@@ -43,12 +39,34 @@ pub fn getting_started(){
                     .help("Shows completed tasks")
                 )
         )
-        .arg(
-            Arg::new("done")
-            .short('d')
-            .long("done")
-            .help("Update the task status to completed")
-        ).get_matches();
+        .subcommand(
+            Command::new("done")
+            .about("Marks the task completed")
+                .arg(
+                    arg!(-t --title <"Title of the task">)
+                    .help("Title of the task")
+                    .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("delete")
+            .about("Deletes the tasks")
+            .arg(
+                arg!(-t --title <"Title of the task">)
+            )
+            .subcommand(
+                Command::new("all")
+                .about("Deletes all / pending / completed tasks depending on which argument you pass")
+                .arg(
+                    arg!(-p --pending)
+                    .action(ArgAction::SetTrue))
+                )
+                .arg(
+                    arg!(-c --completed)
+                    .action(ArgAction::SetTrue)
+                )
+            )
+        .get_matches();
 
     let mut tasks: Vec<Task> = load_json();
 
@@ -71,12 +89,13 @@ pub fn getting_started(){
             let pending = sub_arg.get_flag("pending");              
             let completed = sub_arg.get_flag("completed");
 
+            if pending && completed {
+                println!("Cannot use both --pending and --completed");
+                return;
+            }
+
             for task in tasks {
-                if pending && completed {
-                    println!("Cannot use both --pending and --completed");
-                    return;
-                }
-                else if !pending && !completed {
+                if !pending && !completed {
                     println!("{:#?}", task)
                 }
 
@@ -88,30 +107,28 @@ pub fn getting_started(){
                 }
             }
         }
+        Some(("done", sub_arg)) => {
+            let title = sub_arg.get_one::<String>("title").unwrap().to_string();
+            let mut flag = false;
+
+            for task in &mut tasks {
+                if task.title == title && task.status == Status::Completed{
+                    println!("The task is already completed");
+                }
+
+                if task.title == title {
+                    task.status = Status::Completed;
+                    flag = true;
+                    println!("Status updated");
+                }
+            }
+            if !flag{
+                println!("Task does not exist!");
+            }
+        }
         _ => {
             println!("No valid command was provided");
         }
 
-    }
-    {
-        let mut tasks = load_json();
-        let title = cmds.get_one::<String>("done").unwrap().to_string();
-        let mut flag = false;
-
-        for task in &mut tasks {
-            if task.title == title && task.status == Status::Completed{
-                println!("The task is already completed");
-            }
-
-            if task.title == title {
-                task.status = Status::Completed;
-                flag = true;
-                println!("Status updated");
-            }
-        }
-
-        if !flag{
-            println!("Task does not exist!");
-        }
     }
 }
