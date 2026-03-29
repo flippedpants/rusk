@@ -5,6 +5,10 @@ use clap::{Arg, ArgAction, ArgGroup, ArgMatches, Command, arg, command};
 use chrono::prelude::*;
 use dialoguer::{Confirm, theme::ColorfulTheme};
 
+fn normalize_title(s: &str) -> String {
+    s.trim().to_lowercase()
+}
+
 pub fn getting_started(){
     let cmds: ArgMatches = command!()
     .about("This tool lets you manage your tasks efficiently.")
@@ -120,21 +124,32 @@ pub fn getting_started(){
         }
         Some(("done", sub_arg)) => {
             let title = sub_arg.get_one::<String>("TITLE").unwrap().to_string();
-            let mut flag = false;
+            let needle = normalize_title(&title);
+            let mut updated_any = false;
+            let mut found_any = false;
+            let mut found_already_completed = false;
 
             for task in &mut tasks {
-                if task.title == title && task.status == Status::Completed{
-                    println!("The task is already completed");
-                    return;
+                if normalize_title(&task.title) != needle {
+                    continue;
                 }
-                else if task.title == title {
-                    task.status = Status::Completed;
-                    flag = true;
-                    println!("Status updated");
+
+                found_any = true;
+                if task.status == Status::Completed {
+                    found_already_completed = true;
+                    continue;
+                }
+
+                task.status = Status::Completed;
+                updated_any = true;
                 }
             }
 
-            if !flag{
+            if updated_any {
+                println!("Status updated");
+            } else if found_any && found_already_completed {
+                println!("The task is already completed");
+            } else if !found_any {
                 println!("Task does not exist!");
             }
             
@@ -150,9 +165,9 @@ pub fn getting_started(){
             
             if !empty{
                 if let Some(title) = sub_arg.get_one::<String>("TITLE"){
-                    let lower_title = title.to_lowercase();
+                    let needle = normalize_title(title);
 
-                    tasks.retain(|t| t.title.to_lowercase() != lower_title);
+                    tasks.retain(|t| normalize_title(&t.title) != needle);
 
                     if tasks.len() == initial_len{
                         println!("No task with the given title found!");
@@ -162,34 +177,44 @@ pub fn getting_started(){
                     }
                 }
                 else if sub_arg.get_flag("completed"){
-                    let flag = to_proceed(is_big_cmd, force);
-                    
-                    if tasks.len() == initial_len{
+                    let has_any = tasks.iter().any(|t| t.status == Status::Completed);
+                    if !has_any {
                         println!("No completed tasks found!");
+                        return;
                     }
-                    else if flag{
-                        tasks.retain(|t| t.status != Status::Completed);
-                        println!("Deleted the completed tasks!");
+
+                    let proceed = to_proceed(is_big_cmd, force);
+                    if !proceed {
+                        return;
                     }
+                    
+                    tasks.retain(|t| t.status != Status::Completed);
+                    println!("Deleted the completed tasks!");
                 }
                 else if sub_arg.get_flag("pending"){
-                    let flag = to_proceed(is_big_cmd, force);
-
-                    if tasks.len() == initial_len{
+                    let has_any = tasks.iter().any(|t| t.status == Status::Pending);
+                    if !has_any {
                         println!("No pending tasks found!");
+                        return;
                     }
-                    else if flag{
-                        tasks.retain(|t| t.status != Status::Pending);
-                        println!("Deleted all the pending tasks");
+
+                    let proceed = to_proceed(is_big_cmd, force);
+                    if !proceed {
+                        return;
                     }
+
+                    tasks.retain(|t| t.status != Status::Pending);
+                    println!("Deleted all the pending tasks");
                 }
                 else if sub_arg.get_flag("all") {
-                    let flag = to_proceed(is_big_cmd, force);
+                    let proceed = to_proceed(is_big_cmd, force);
 
-                    if flag {
-                        tasks.clear();
-                        println!("Deleted all the tasks.");
+                    if !proceed {
+                        return;
                     }
+
+                    tasks.clear();
+                    println!("Deleted all the tasks.");
 
                 }
                 save_to_json(tasks);
@@ -207,25 +232,19 @@ pub fn getting_started(){
 
 fn to_proceed(is_big_cmd: bool, force: bool) -> bool{
 
-    if is_big_cmd && !force{
-        let proceed = Confirm::with_theme(&ColorfulTheme::default())
-            .with_prompt("You are about to delete multiple tasks. Are you sure? [Y/N]")
-            .default(false)
-            .interact()
-            .unwrap();
-
-        if !proceed {
-            println!("Operation cancelled!");
-            return false;
-        }
-        else if !is_big_cmd || force{
-            return true;
-        }
-        else{
-            return false;
-        }
-    } 
-    else{
-        return false;
+    if !is_big_cmd || force {
+        return true;
     }
+
+    let proceed = Confirm::with_theme(&ColorfulTheme::default())
+        .with_prompt("You are about to delete multiple tasks. Are you sure? [Y/N]")
+        .default(false)
+        .interact()
+        .unwrap();
+
+    if !proceed {
+        println!("Operation cancelled!");
+    }
+
+    proceed
 }
