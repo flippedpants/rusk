@@ -9,4 +9,4 @@
 # TODO - 
 - [x] find dependencies 
 - [x] Save the data to jsonl
-- [ ]  implement the basic 3 commands
+- [x]  implement the basic 3 commands

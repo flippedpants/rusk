@@ -19,8 +19,8 @@ pub fn save_to_json(tasks: Vec<Task>){
         let j = serde_json::to_string(&task).expect("failed to serialize");
         writeln!(buf, "{}", j).expect("failed to write");
 
-        println!("Task added:");
-        println!("{:#?}", task);
+        // println!("Task added:");
+        // println!("{:#?}", task);
     }
 
     buf.flush();

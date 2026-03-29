@@ -1,7 +1,7 @@
 use crate::task::{Task, Priority, Status};
 use crate::storage::{save_to_json, load_json};
 use uuid::Uuid;
-use clap::{Arg,arg, ArgAction, ArgMatches, Command, command};
+use clap::{Arg, ArgAction, ArgGroup, ArgMatches, Command, arg, command};
 use chrono::prelude::*;
 
 pub fn getting_started(){
@@ -43,26 +43,32 @@ pub fn getting_started(){
             Command::new("done")
             .about("Marks the task completed")
                 .arg(
-                    arg!(-t --title <"Title of the task">)
+                    arg!([TITLE] "Title of the task to update")
                     .help("Title of the task")
                     .required(true)
                 )
         )
         .subcommand(
             Command::new("delete")
-            .about("Deletes the tasks")
-            .arg(
-                arg!(-t --title <"Title of the task">)
-            )
-            .subcommand(
-                Command::new("all")
-                .about("Deletes all / pending / completed tasks depending on which argument you pass")
+            .about("Deletes the task")
+                .group(ArgGroup::new("selection").required(true))
                 .arg(
-                    arg!(-p --pending)
-                    .action(ArgAction::SetTrue))
+                    arg!([TITLE] "Title of the task to delete")
+                    .group("selection")
                 )
                 .arg(
-                    arg!(-c --completed)
+                    arg!(-a --all "Deletes all the task")
+                    .group("selection")
+                    .action(ArgAction::SetTrue)
+                )
+                .arg(
+                    arg!(-p --pending "Deletes all the pending task")
+                    .group("selection")
+                    .action(ArgAction::SetTrue)
+                )
+                .arg(
+                    arg!(-c --completed "Deletes all the completed task")
+                    .group("selection")
                     .action(ArgAction::SetTrue)
                 )
             )
@@ -108,24 +114,46 @@ pub fn getting_started(){
             }
         }
         Some(("done", sub_arg)) => {
-            let title = sub_arg.get_one::<String>("title").unwrap().to_string();
+            let title = sub_arg.get_one::<String>("TITLE").unwrap().to_string();
             let mut flag = false;
 
             for task in &mut tasks {
                 if task.title == title && task.status == Status::Completed{
                     println!("The task is already completed");
+                    return;
                 }
-
-                if task.title == title {
+                else if task.title == title {
                     task.status = Status::Completed;
                     flag = true;
                     println!("Status updated");
                 }
             }
+
             if !flag{
                 println!("Task does not exist!");
             }
+            
+            save_to_json(tasks);
         }
+        Some(("delete", sub_arg)) => {
+            if let Some(title) = sub_arg.get_one::<String>("TITLE"){
+                tasks.retain(|t| t.title != *title);
+                println!("Task deleted.");
+            }
+            else if sub_arg.get_flag("completed"){
+                tasks.retain(|t| t.status != Status::Completed);
+                println!("Deleted the completed tasks!");
+            }
+            else if sub_arg.get_flag("pending"){
+                tasks.retain(|t| t.status != Status::Pending);
+                println!("Deleted all the pending tasks");
+            }
+            else if sub_arg.get_flag("all"){
+                tasks.clear();
+                println!("Deleted all the tasks.");
+            }
+            save_to_json(tasks);
+        }   
         _ => {
             println!("No valid command was provided");
         }
