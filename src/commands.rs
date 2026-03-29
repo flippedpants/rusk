@@ -3,6 +3,7 @@ use crate::storage::{save_to_json, load_json};
 use uuid::Uuid;
 use clap::{Arg, ArgAction, ArgGroup, ArgMatches, Command, arg, command};
 use chrono::prelude::*;
+use dialoguer::{Confirm, theme::ColorfulTheme};
 
 pub fn getting_started(){
     let cmds: ArgMatches = command!()
@@ -71,6 +72,10 @@ pub fn getting_started(){
                     .group("selection")
                     .action(ArgAction::SetTrue)
                 )
+                .arg(
+                    arg!(-f --force "Skip confirmation prompt")
+                        .action(ArgAction::SetTrue)
+                )
             )
         .get_matches();
 
@@ -136,27 +141,91 @@ pub fn getting_started(){
             save_to_json(tasks);
         }
         Some(("delete", sub_arg)) => {
-            if let Some(title) = sub_arg.get_one::<String>("TITLE"){
-                tasks.retain(|t| t.title != *title);
-                println!("Task deleted.");
+
+            let is_big_cmd = sub_arg.get_flag("all") || sub_arg.get_flag("completed") || sub_arg.get_flag("pending");
+
+            let force = sub_arg.get_flag("force");
+            let initial_len = tasks.len();
+            let empty = tasks.is_empty();
+            
+            if !empty{
+                if let Some(title) = sub_arg.get_one::<String>("TITLE"){
+                    let lower_title = title.to_lowercase();
+
+                    tasks.retain(|t| t.title.to_lowercase() != lower_title);
+
+                    if tasks.len() == initial_len{
+                        println!("No task with the given title found!");
+                    }
+                    else{
+                        println!("Task deleted.");
+                    }
+                }
+                else if sub_arg.get_flag("completed"){
+                    let flag = to_proceed(is_big_cmd, force);
+                    
+                    if tasks.len() == initial_len{
+                        println!("No completed tasks found!");
+                    }
+                    else if flag{
+                        tasks.retain(|t| t.status != Status::Completed);
+                        println!("Deleted the completed tasks!");
+                    }
+                }
+                else if sub_arg.get_flag("pending"){
+                    let flag = to_proceed(is_big_cmd, force);
+
+                    if tasks.len() == initial_len{
+                        println!("No pending tasks found!");
+                    }
+                    else if flag{
+                        tasks.retain(|t| t.status != Status::Pending);
+                        println!("Deleted all the pending tasks");
+                    }
+                }
+                else if sub_arg.get_flag("all") {
+                    let flag = to_proceed(is_big_cmd, force);
+
+                    if flag {
+                        tasks.clear();
+                        println!("Deleted all the tasks.");
+                    }
+
+                }
+                save_to_json(tasks);
             }
-            else if sub_arg.get_flag("completed"){
-                tasks.retain(|t| t.status != Status::Completed);
-                println!("Deleted the completed tasks!");
+            else{
+                println!("You dont have any tasks!");
             }
-            else if sub_arg.get_flag("pending"){
-                tasks.retain(|t| t.status != Status::Pending);
-                println!("Deleted all the pending tasks");
-            }
-            else if sub_arg.get_flag("all"){
-                tasks.clear();
-                println!("Deleted all the tasks.");
-            }
-            save_to_json(tasks);
         }   
         _ => {
             println!("No valid command was provided");
         }
 
+    }
+}
+
+fn to_proceed(is_big_cmd: bool, force: bool) -> bool{
+
+    if is_big_cmd && !force{
+        let proceed = Confirm::with_theme(&ColorfulTheme::default())
+            .with_prompt("You are about to delete multiple tasks. Are you sure? [Y/N]")
+            .default(false)
+            .interact()
+            .unwrap();
+
+        if !proceed {
+            println!("Operation cancelled!");
+            return false;
+        }
+        else if !is_big_cmd || force{
+            return true;
+        }
+        else{
+            return false;
+        }
+    } 
+    else{
+        return false;
     }
 }

@@ -23,9 +23,9 @@ pub fn save_to_json(tasks: Vec<Task>){
         // println!("{:#?}", task);
     }
 
-    buf.flush();
+    let _ = buf.flush();
 
-    println!("All data saved to - {}", display);
+    // println!("Data updated!");
 }
 
 pub fn load_json() -> Vec<Task>{
