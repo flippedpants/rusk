@@ -3,9 +3,9 @@
 mod task;
 mod commands;
 mod storage;
-use commands::getting_started;
+mod logic;
+use commands::start;
 
 fn main() {
-
-    getting_started();
+    start();
 }

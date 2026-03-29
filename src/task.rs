@@ -1,16 +1,17 @@
 use uuid::Uuid;
-use chrono::{DateTime, Local};
+// use chrono::{DateTime, Local};
 use serde::{Serialize, Deserialize};
 use strum::EnumString;
+use std::fmt;
 
-#[derive(Debug, Serialize, Deserialize, EnumString, PartialEq)]
+#[derive(Clone,Debug, Serialize, Deserialize, EnumString, PartialEq)]
 #[serde(rename_all="lowercase")]
 pub enum Status{
     Pending,
     Completed,
 }
 
-#[derive(Debug, Serialize, Deserialize, EnumString, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, EnumString, PartialEq)]
 #[serde(rename_all="lowercase")]
 pub enum Priority{
     Low,
@@ -18,23 +19,43 @@ pub enum Priority{
     High,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone,Debug, Serialize, Deserialize, PartialEq)]
 pub struct Task{
     id: Uuid,
     pub title: String,
     pub priority: Priority,
     pub status: Status,
-    due_date: DateTime<Local>,
+    // due_date: DateTime<Local>,
 }
 
 impl Task{
-    pub fn new(id: Uuid, title: String, priority: Priority, status: Status, due_date:DateTime<Local> ) -> Self{
+    pub fn new(id: Uuid, title: String, priority: Priority, status: Status) -> Self{
         Self{
             id,
             title,
             priority,
             status,
-            due_date,
         }
+    }
+}
+
+impl fmt::Display for Priority{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let value = match self {
+            Priority::High => "High",
+            Priority::Medium => "Medium",
+            Priority::Low => "Low"
+        };
+        return write!(f, "{}", value);
+    }
+}
+
+impl fmt::Display for Status{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let value = match self {
+            Status::Completed => "Completed",
+            Status::Pending => "Pending"
+        };
+        return write!(f, "{}", value);
     }
 }

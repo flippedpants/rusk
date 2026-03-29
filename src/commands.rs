@@ -1,15 +1,15 @@
 use crate::task::{Task, Priority, Status};
 use crate::storage::{save_to_json, load_json};
+use crate::logic::print_tasks;
 use uuid::Uuid;
 use clap::{Arg, ArgAction, ArgGroup, ArgMatches, Command, arg, command};
-use chrono::prelude::*;
 use dialoguer::{Confirm, theme::ColorfulTheme};
 
 fn normalize_title(s: &str) -> String {
     s.trim().to_lowercase()
 }
 
-pub fn getting_started(){
+pub fn start(){
     let cmds: ArgMatches = command!()
     .about("This tool lets you manage your tasks efficiently.")
         .subcommand(
@@ -91,11 +91,9 @@ pub fn getting_started(){
             let priority: Priority = sub_arg.get_one::<String>("priority").unwrap().parse().expect("Enter a valid priority");
             let status: Status = String::from("Pending").parse().expect("Should a valid status");
 
-            let local: DateTime<Local> = Local::now();
             let id = Uuid::new_v4();
 
-
-            let new_task: Task = Task::new(id,String::from(title),priority,status,local);
+            let new_task: Task = Task::new(id,String::from(title),priority,status);
             tasks.push(new_task);
 
             save_to_json(tasks);
@@ -109,17 +107,27 @@ pub fn getting_started(){
                 return;
             }
 
-            for task in tasks {
-                if !pending && !completed {
-                    println!("{:#?}", task)
-                }
+            if !pending && !completed {
+                print_tasks(&tasks);
+            }
 
-                if pending && task.status == Status::Pending {
-                    println!("{:#?}", task);
-                }
-                else if completed && task.status == Status::Completed {
-                    println!("{:#?}", task);
-                }
+            if pending {
+                let filtered_tasks: Vec<Task> = tasks
+                    .iter()
+                    .filter(|t| t.status == Status::Pending)
+                    .cloned()
+                    .collect();
+
+                print_tasks(&filtered_tasks);
+            }
+            else if completed{
+                let filtered_tasks: Vec<Task> = tasks
+                    .iter()
+                    .filter(|t| t.status == Status::Completed)
+                    .cloned()
+                    .collect();
+
+                print_tasks(&filtered_tasks);
             }
         }
         Some(("done", sub_arg)) => {
@@ -143,13 +151,14 @@ pub fn getting_started(){
                 task.status = Status::Completed;
                 updated_any = true;
                 }
-            }
 
             if updated_any {
                 println!("Status updated");
-            } else if found_any && found_already_completed {
+            } 
+            else if found_any && found_already_completed {
                 println!("The task is already completed");
-            } else if !found_any {
+            } 
+            else if !found_any {
                 println!("Task does not exist!");
             }
             
@@ -226,7 +235,6 @@ pub fn getting_started(){
         _ => {
             println!("No valid command was provided");
         }
-
     }
 }
 
