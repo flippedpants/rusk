@@ -150,7 +150,7 @@ pub fn start(){
 
                 task.status = Status::Completed;
                 updated_any = true;
-                }
+            }
 
             if updated_any {
                 println!("Status updated");
