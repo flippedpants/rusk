@@ -68,6 +68,13 @@ Notes:
 - For `delete`, use either a `TITLE` or one of `--all`, `--pending`, `--completed`.
 - `--force` skips the confirmation prompt for bulk deletes.
 
+- ### update
+Update to the latest version
+
+```bash
+rusk update
+```
+
 ## Built With
 - Rust
 - Clap

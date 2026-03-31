@@ -9,7 +9,7 @@ fn get_path() -> PathBuf{
     path.push(".rusk");
     std::fs::create_dir_all(&path).expect("Failed to create directory");
 
-    path.push("tasks.json");
+    path.push("tasks.jsonl");
     return path;
 }
 
