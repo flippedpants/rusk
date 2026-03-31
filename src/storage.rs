@@ -2,10 +2,19 @@ use crate::task::Task;
 use core::panic;
 use std::fs::{File, read_to_string};
 use std::io::{Write, BufWriter};
-use std::path::Path;
+use std::path::{PathBuf};
+
+fn get_path() -> PathBuf{
+    let mut path = dirs::home_dir().expect("couldn't find the home directory");
+    path.push(".rusk");
+    std::fs::create_dir_all(&path).expect("Failed to create directory");
+
+    path.push("tasks.json");
+    return path;
+}
 
 pub fn save_to_json(tasks: Vec<Task>){
-    let path = Path::new("list.jsonl");
+    let path = get_path();
     let display = path.display();
 
     let file = match File::create(&path) {
@@ -29,7 +38,7 @@ pub fn save_to_json(tasks: Vec<Task>){
 }
 
 pub fn load_json() -> Vec<Task>{
-    let path = Path::new("list.jsonl");
+    let path = get_path();
     let mut tasks = Vec::new();
 
     if !path.exists(){

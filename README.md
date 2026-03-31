@@ -11,8 +11,6 @@ Tasks are saved locally in `list.jsonl` in the directory you run the CLI from.
 ## Installation
 ```bash
 curl -sL https://github.com/flippedpants/rusk/releases/latest/download/install.sh | bash
-chmod +x rusk
-sudo mv rusk /usr/local/bin/
 ```
 
 ## Commands
