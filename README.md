@@ -1,4 +1,4 @@
-# Rusk
+# Rusk (Only for linux right now)
 
 
 `Rusk` is a small Rust-based command-line tool for managing tasks from your terminal.
