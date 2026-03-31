@@ -4,6 +4,11 @@ use crate::logic::print_tasks;
 use uuid::Uuid;
 use clap::{Arg, ArgAction, ArgGroup, ArgMatches, Command, arg, command};
 use dialoguer::{Confirm, theme::ColorfulTheme};
+use reqwest;
+use std::env;
+use std::fs;
+
+use std::os::unix::fs::PermissionsExt;
 
 fn normalize_title(s: &str) -> String {
     s.trim().to_lowercase()
@@ -12,6 +17,10 @@ fn normalize_title(s: &str) -> String {
 pub fn start(){
     let cmds: ArgMatches = command!()
     .about("This tool lets you manage your tasks efficiently.")
+        .subcommand(
+            Command::new("update")
+            .about("updates the version of rusk")
+        )
         .subcommand(
             Command::new("add")
             .about("Adds a new task")
@@ -86,6 +95,41 @@ pub fn start(){
     let mut tasks: Vec<Task> = load_json();
 
     match cmds.subcommand(){
+        Some(("update", sub_arg)) => {
+            let current_version = env!("CARGO_PKG_VERSION");
+            let version_api = "https://api.github.com/repos/flippedpants/rusk/releases/latest";
+
+            let client = reqwest::blocking::Client::new();
+            let res = client.get(version_api)
+                .header("User-Agent", "rusk")
+                .send()
+                .unwrap();
+
+            let json: serde_json::Value = res.json().unwrap();
+            let latest_version = json["tag_name"].as_str().unwrap();
+            let latest_version_num = latest_version.trim_start_matches('v');
+
+            if latest_version_num == current_version {
+                println!("You are already on the latest version!");
+                return;
+            }
+
+            let download_url = "https://github.com/flippedpants/rusk/releases/latest/download/rusk";
+            let bytes = reqwest::blocking::get(download_url).unwrap().bytes().unwrap();
+            fs::write("rusk_new", &bytes).unwrap();
+
+            let mut perms = fs::metadata("rusk_new").unwrap().permissions();
+            perms.set_mode(0o755);
+            fs::set_permissions("rusk_new", perms).unwrap();
+
+            let current_exe = env::current_exe().unwrap();
+            let backup = current_exe.with_extension("old");
+
+            fs::rename(&current_exe, &backup).unwrap();
+            fs::rename("rusk_new", &current_exe).unwrap();
+
+            println!("Updated!");
+        }
         Some(("add", sub_arg)) =>{
             let title = sub_arg.get_one::<String>("title").unwrap();
             let priority: Priority = sub_arg.get_one::<String>("priority").unwrap().parse().expect("Enter a valid priority");
