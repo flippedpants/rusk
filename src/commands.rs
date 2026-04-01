@@ -40,7 +40,7 @@ pub fn start(){
             .about("Lists all the tasks")
                 .arg(
                     Arg::new("pending")
-                    // .short('p')
+                    .short('p')
                     .long("pending")
                     .action(ArgAction::SetTrue)
                     .help("shows pending tasks")
@@ -141,6 +141,7 @@ pub fn start(){
             tasks.push(new_task);
 
             save_to_json(tasks);
+            println!("Task added successfully!");
         }
         Some(("ls", sub_arg)) => {
             let pending = sub_arg.get_flag("pending");              

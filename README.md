@@ -1,12 +1,11 @@
 # Rusk (Only for linux right now)
 
-
 `Rusk` is a small Rust-based command-line tool for managing tasks from your terminal.
 - add tasks with a priority
 - list them (all / pending / completed), mark tasks as completed
 - delete tasks
 
-Tasks are saved locally in `list.jsonl` in the directory you run the CLI from.
+Tasks are saved locally in `tasks.jsonl` which is in `~/.rusk`
 
 ## Installation
 ```bash
@@ -15,7 +14,7 @@ curl -sL https://github.com/flippedpants/rusk/releases/latest/download/install.s
 
 ## Commands
 
-- ### add
+### add
 Add a new task (it starts as `Pending`).
 
 ```bash
@@ -26,7 +25,7 @@ Options:
 - `-t, --title <TITLE>`: Task title (required)
 - `-p, --priority <Low|Medium|High>`: Priority (required and case sensitive)
 
-- ### ls
+### ls
 List tasks.
 
 ```bash
@@ -41,14 +40,14 @@ rusk ls --completed
 # or: rusk ls -c
 ```
 
-- ### done
+### done
 Mark a task as completed (matches by title, case-insensitive).
 
 ```bash
 rusk done "Buy milk"
 ```
 
-- ### delete
+### delete
 Delete tasks.
 
 ```bash
@@ -68,8 +67,8 @@ Notes:
 - For `delete`, use either a `TITLE` or one of `--all`, `--pending`, `--completed`.
 - `--force` skips the confirmation prompt for bulk deletes.
 
-- ### update
-Update to the latest version
+### update
+Update to the latest version.
 
 ```bash
 rusk update
