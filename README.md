@@ -1,5 +1,5 @@
 # Rusk (Only for linux right now)
-
+ 
 `Rusk` is a small Rust-based command-line tool for managing tasks from your terminal.
 - add tasks with a priority
 - list them (all / pending / completed), mark tasks as completed
@@ -23,7 +23,8 @@ rusk add -t "Buy milk" -p High
 
 Options:
 - `-t, --title <TITLE>`: Task title (required)
-- `-p, --priority <Low|Medium|High>`: Priority (required and case sensitive)
+- `-p, --priority <Low|Medium|High>`: Priority (not case sensitive)
+- `-p --priority <l|m|h>`: You can also do this
 
 ### ls
 List tasks.

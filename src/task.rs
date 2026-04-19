@@ -2,7 +2,7 @@ use uuid::Uuid;
 // use chrono::{DateTime, Local};
 use serde::{Serialize, Deserialize};
 use strum::EnumString;
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 #[derive(Clone,Debug, Serialize, Deserialize, EnumString, PartialEq)]
 #[serde(rename_all="lowercase")]
@@ -11,11 +11,15 @@ pub enum Status{
     Completed,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, EnumString, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all="lowercase")]
+// #[strum(serialize_all = "lowercase")]
 pub enum Priority{
+    // #[strum(serialize = "l")]
     Low,
+    // #[strum(serialize = "m")]
     Medium,
+    // #[strum(serialize = "h")]
     High,
 }
 
@@ -35,6 +39,18 @@ impl Task{
             title,
             priority,
             status,
+        }
+    }
+}
+
+impl FromStr for Priority{
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err>{
+        match s.to_lowercase().as_str() {
+            "low" | "l" => Ok(Priority::Low),
+            "medium" | "m"=> Ok(Priority::Medium),
+            "high" | "h" => Ok(Priority::High),
+            _ => Err(format!("Invalid priority - {}", s))
         }
     }
 }
